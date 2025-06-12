@@ -39,8 +39,8 @@ int main() {
         switch (opcion) {
             case AGREGAR_PRODUCTO:
                 lista = AgregarProducto(lista);
-                usleep(1500000);
-                system("clear");
+                sleep(1);
+                system("cls");
                 break;
             case MOSTRAR_PRODUCTOS:
                 MostrarProductos(lista);
