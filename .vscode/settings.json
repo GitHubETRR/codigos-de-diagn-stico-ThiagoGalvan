@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "primer_code.C": "cpp"
+        "primer_code.C": "cpp",
+        "iostream": "cpp"
     }
 }
