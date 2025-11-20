@@ -247,3 +247,5 @@ producto_t* CargarDesdeArchivo() {
     printf("Productos cargados desde archivo.\n");
     return lista;
 }
+
+

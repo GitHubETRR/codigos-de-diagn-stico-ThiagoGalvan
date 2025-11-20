@@ -10,3 +10,4 @@ int main(){
     cout << "El valor de numero es " << numero << "\n";
     return 0;
 }
+
