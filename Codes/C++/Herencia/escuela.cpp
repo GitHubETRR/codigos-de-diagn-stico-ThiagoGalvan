@@ -2,6 +2,8 @@
 
 using namespace std;
 
+// (Se omiten funciones auxiliares no implementadas)
+
 typedef enum{
     CREAR_ALUMNO = 1,
     CREAR_PROFESOR,
@@ -76,9 +78,6 @@ alumno::alumno(string n, string a, int d, int e, int num) : persona(n,a,d,e) {
     asistencia = 0;
 }
 
-
-
-
 //Clase profesor con la herencia de persona
 class profesor : public persona {
     private:
@@ -113,64 +112,67 @@ profesor::profesor(string n, string a, int d, int e, int cod, string mat) : pers
 }
 
 
-int main(){
-    int opcion;
-    cout << "Bienvenido al sistema de gestion escolar" << endl;
-    cout << "1. Crear un alumno" << endl;
-    cout << "2. Crear un profesor" << endl;
-    cout << "3. Salir" << endl;
-    cout << "Ingrese una opcion: ";
-    cin >> opcion;
+int main() {
+    int opcion = 0;
+    do {
+        cout << "\nBienvenido al sistema de gestion escolar" << endl;
+        cout << "1. Crear un alumno" << endl;
+        cout << "2. Crear un profesor" << endl;
+        cout << "3. Salir" << endl;
+        cout << "Ingrese una opcion: ";
+        cin >> opcion;
 
-    switch (opcion){
-    case CREAR_ALUMNO:{
-        string nombre;
-        string apellido;
-        int dni;
-        int edad;
-        int numero_alumno;
+        switch (opcion) {
+            case CREAR_ALUMNO: {
+                string nombre, apellido;
+                int dni, edad, numero_alumno;
+                cout << "Ingrese el nombre: ";
+                cin >> nombre;
+                cout << "Ingrese el apellido: ";
+                cin >> apellido;
+                cout << "Ingrese el DNI: ";
+                cin >> dni;
+                cout << "Ingrese la edad: ";
+                cin >> edad;
+                cout << "Ingrese el numero de alumno: ";
+                cin >> numero_alumno;
 
-        cout << "Ingrese el nombre: ";
-        cin >> nombre;
-        cout << "Ingrese el apellido: ";
-        cin >> apellido;
-        cout << "Ingrese el DNI: ";
-        cin >> dni;
-        cout << "Ingrese la edad: ";
-        cin >> edad;
-        
-        alumno a1(nombre, apellido,dni,edad, numero_alumno);
-        break;
-    }
+                alumno a1(nombre, apellido, dni, edad, numero_alumno);
+                break;
+            }
 
-    case CREAR_PROFESOR:{
+            case CREAR_PROFESOR: {
+                string nombre, apellido, materia;
+                int dni, edad, codigo_profesor;
+                cout << "Ingrese el nombre: ";
+                cin >> nombre;
+                cout << "Ingrese el apellido: ";
+                cin >> apellido;
+                cout << "Ingrese el DNI: ";
+                cin >> dni;
+                cout << "Ingrese la edad: ";
+                cin >> edad;
+                cout << "Ingrese el codigo de profesor: ";
+                cin >> codigo_profesor;
+                cout << "Ingrese la materia: ";
+                cin >> materia;
 
-        string nombre;
-        string apellido;
-        int dni;
-        int edad;
+                profesor p1(nombre, apellido, dni, edad, codigo_profesor, materia);
+                break;
+            }
 
-        cout << "Ingrese el nombre: ";
-        cin >> nombre;
-        cout << "Ingrese el apellido: ";
-        cin >> apellido;
-        cout << "Ingrese el DNI: ";
-        cin >> dni;
-        cout << "Ingrese la edad: ";
-        cin >> edad;
-        
-        break;
-    }
+            case SALIR:
+                cout << "Hasta luego" << endl;
+                break;
 
-    case SALIR:{
-        cout << "Hasta luego" << endl;
-        break;
-    }
-    default:
-        break;
-    }
-    
+            default:
+                cout << "Opcion invalida. Intente de nuevo." << endl;
+                break;
+        }
 
+    } while (opcion != SALIR);
+
+    return 0;
 }
 
 
