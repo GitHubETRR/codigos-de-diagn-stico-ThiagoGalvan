@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 
@@ -11,6 +13,7 @@ typedef enum{
     MOSTRAR_PROFESORES,
     CARGAR_ASISTENCIA,
     CARGAR_RESULTADO_PRUEBA,
+    MOSTRAR_PROMEDIOS,
     SALIR
 }opcion_t;
 
@@ -58,6 +61,7 @@ class alumno : public persona{
         int pruebas_desaprobadas;
         float promedio;
         int asistencia;
+        vector<int> resultados_pruebas;
     public:
         alumno(string, string, int, int);// constructor   
         // GETTERS DE LOS ALUMNOS
@@ -67,8 +71,8 @@ class alumno : public persona{
         int getPruebasDesaprobadas() const;
         float getPromedio() const;
         // SETTERS DE LOS ALUMNOS
-        void setCodigoAlumno(int);
-        void setResultadoPrueba(int);
+        
+        void cargarResultadoPrueba(int);
         void cargarAsistencia(int);
 };
 
@@ -90,7 +94,21 @@ int alumno::getPruebasDesaprobadas() const { return pruebas_desaprobadas; }
 float alumno::getPromedio() const { return promedio; }
 
 //Funcion de los setters de los alumnos
-void alumno::setCodigoAlumno(int num) { numero_alumno = num; }
+void alumno::cargarResultadoPrueba(int resultado) {
+    resultados_pruebas.push_back(resultado);
+    if (resultado >= 7) {
+        pruebas_aprobadas++;
+    } else {
+        pruebas_desaprobadas++;
+    }
+    
+    float suma = 0;
+    for (int nota : resultados_pruebas) {
+        suma += nota;
+    }
+    promedio = suma / resultados_pruebas.size();
+}
+
 void alumno::cargarAsistencia(int a) { asistencia += a; }
 
 
@@ -136,12 +154,17 @@ string profesor::getMateria()const{ return materia; }
 int Bienvenida();
 alumno CrearAlumno();
 profesor CrearProfesor();
-
+void guardarAlumnos();
+void cargarAlumnos();
+void guardarProfesores();
+void cargarProfesores();
 // VECTORES GLOBALES(PARA REEMPLAZAR LAS LISTAS ENLAZADAS CON PUNTEROS)
 vector<alumno> lista_alumnos;
 vector<profesor> lista_profesores;
 
 int main() {
+    cargarAlumnos();
+    cargarProfesores();
     int opcion;
     do {
         opcion = Bienvenida();
@@ -149,12 +172,14 @@ int main() {
             case CREAR_ALUMNO: {
                 alumno a1 = CrearAlumno();
                 lista_alumnos.push_back(a1);
+                guardarAlumnos();
                 break;
             }
 
             case CREAR_PROFESOR: {
                 profesor p1 = CrearProfesor();
                 lista_profesores.push_back(p1);
+                guardarProfesores();
                 break;
             }
     
@@ -171,7 +196,11 @@ int main() {
                 for(const auto& alumno_actual : lista_alumnos){
                     cout<< " | Numero alumno: " << alumno_actual.getNumeroAlumno()<< " | ";
                     cout << alumno_actual.getNombre() << " " << alumno_actual.getApellido();
-                    cout<< " | DNI: " << alumno_actual.getDNI()<< endl;  
+                    cout<< " | DNI: " << alumno_actual.getDNI();
+                    cout<< " | Promedio: " << alumno_actual.getPromedio();
+                    cout<< " | Aprobadas: " << alumno_actual.getPruebasAprobadas();
+                    cout<< " | Desaprobadas: " << alumno_actual.getPruebasDesaprobadas() << endl;
+
                 }
                 cout << "Presione enter para volver al menu.\n";
                 cin.ignore();
@@ -206,12 +235,12 @@ int main() {
                 bool asistencia_valida;
                 
                 if (lista_alumnos.empty()){
-                cout << "No hay alumnos cargados aun.\n";
-                cout << "Presione enter para volver al menu.\n";
-                cin.ignore();
-                cin.get();
-                system("cls");
-                break;
+                    cout << "No hay alumnos cargados aun.\n";
+                    cout << "Presione enter para volver al menu.\n";
+                    cin.ignore();
+                    cin.get();
+                    system("cls");
+                    break;
                 }
                 
                 
@@ -229,8 +258,66 @@ int main() {
                     alumno_actual.cargarAsistencia(asistencia);
                     
                 }
-                
+                guardarAlumnos();
                 break;      
+
+            case CARGAR_RESULTADO_PRUEBA:
+                if (lista_alumnos.empty()){
+                    cout << "No hay alumnos cargados aun.\n";
+                    cout << "Presione enter para volver al menu.\n";
+                    cin.ignore();
+                    cin.get();
+                    system("cls");
+                    break;
+                }
+
+                int nota;
+                bool nota_valida;
+
+                for (auto& alumno_actual : lista_alumnos)
+                {
+                    do{
+                        cout << "Ingrese nota 1<>10 para "; 
+                        cout<< alumno_actual.getNombre() << " "; 
+                        cout<< alumno_actual.getApellido() << ": ";
+                        cin >> nota;
+
+                        nota_valida = (nota >= 1 && nota <= 10);
+
+                        if(!nota_valida)
+                            cout << "\nNota invalida. Debe estar entre 1 y 10.\n";
+
+                    }while (!nota_valida);
+
+                    alumno_actual.cargarResultadoPrueba(nota);
+                    cout << "Presione enter para volver al menu.\n";
+                    cin.ignore();
+                    cin.get();
+                    system("cls");
+                }
+                guardarAlumnos();
+                break;
+                
+            case MOSTRAR_PROMEDIOS:
+                if (lista_alumnos.empty()){
+                    cout << "No hay alumnos cargados aun.\n";
+                    cout << "Presione enter para volver al menu.\n";
+                    cin.ignore();
+                    cin.get();
+                    system("cls");
+                    break;
+                }
+                cout << "\n=== PROMEDIOS DE ALUMNOS ===\n";
+                for(const auto& alumno_actual : lista_alumnos){
+                    cout<< " | Numero alumno: " << alumno_actual.getNumeroAlumno()<< " | ";
+                    cout << alumno_actual.getNombre() << " " << alumno_actual.getApellido();
+                    cout<< " | Promedio: " << alumno_actual.getPromedio()<< endl;  
+                }
+                cout << "Presione enter para volver al menu.\n";
+                cin.ignore();
+                cin.get();
+                system("cls");
+                break;
 
 
             case SALIR:
@@ -256,6 +343,7 @@ int Bienvenida() {
     cout << MOSTRAR_PROFESORES<< ". Mostrar Profesores\n";
     cout << CARGAR_ASISTENCIA<< ". Cargar Asistencia\n";
     cout << CARGAR_RESULTADO_PRUEBA<< ". Cargar Resultado Prueba\n";
+    cout << MOSTRAR_PROMEDIOS<< ". Mostrar Promedios\n";
     cout << SALIR<< ". Salir\n";
     cout << "Ingrese su opcion: ";
     cin >> opcion;
@@ -281,6 +369,7 @@ alumno CrearAlumno() {
     return a1;
 }
 profesor CrearProfesor() {
+
     string nombre, apellido, materia;
     int dni, edad, codigo_profesor;
     cout << "Ingrese el nombre: ";
@@ -301,4 +390,22 @@ profesor CrearProfesor() {
     cin.get();
     system("cls");
     return p1;
+}
+
+void guardarAlumnos() {
+    ofstream archivo("alumnos.csv");
+
+    for (const auto& a : lista_alumnos) {
+        archivo << a.getNumeroAlumno() << ","
+                << a.getNombre() << ","
+                << a.getApellido() << ","
+                << a.getDNI() << ","
+                << a.getEdad() << ","
+                << a.getPromedio() << ","
+                << a.getPruebasAprobadas() << ","
+                << a.getPruebasDesaprobadas() << ","
+                << a.getAsistencia()
+                << endl;
+    }
+    archivo.close();
 }
