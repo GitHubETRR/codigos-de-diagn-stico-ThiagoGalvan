@@ -70,10 +70,15 @@ class alumno : public persona{
         int getPruebasAprobadas() const;
         int getPruebasDesaprobadas() const;
         float getPromedio() const;
+        vector<int> getResultados()const; 
         // SETTERS DE LOS ALUMNOS
         
         void cargarResultadoPrueba(int);
         void cargarAsistencia(int);
+        void set_pruebas_aprobadas(int);
+        void set_pruebas_desaprobadas(int);
+        void set_promedio(float);
+
 };
 
 // Funcion del Constructor de alumno    
@@ -89,28 +94,34 @@ alumno::alumno(string nombre, string apellido, int dni, int edad) : persona(nomb
 //Funcion de los getters de los alumnos
 int alumno::getNumeroAlumno() const { return numero_alumno; }
 int alumno::getAsistencia() const { return asistencia; }
-int alumno::getPruebasAprobadas() const { return pruebas_aprobadas; }
-int alumno::getPruebasDesaprobadas() const { return pruebas_desaprobadas; }
-float alumno::getPromedio() const { return promedio; }
+int alumno::getPruebasAprobadas() const {
+    int cont = 0;
+    for (int nota : resultados_pruebas) if (nota >= 7) cont++;
+    return cont;
+}
+int alumno::getPruebasDesaprobadas() const {
+    int cont = 0;
+    for (int nota : resultados_pruebas) if (nota < 7) cont++;
+    return cont;
+}
+float alumno::getPromedio() const {
+    if (resultados_pruebas.empty()) return 0;
+    float suma = 0;
+    for (int nota : resultados_pruebas) 
+    suma += nota;
+    return suma / resultados_pruebas.size();
+}
+vector<int> alumno::getResultados()const { return resultados_pruebas; }
 
 //Funcion de los setters de los alumnos
 void alumno::cargarResultadoPrueba(int resultado) {
     resultados_pruebas.push_back(resultado);
-    if (resultado >= 7) {
-        pruebas_aprobadas++;
-    } else {
-        pruebas_desaprobadas++;
-    }
-    
-    float suma = 0;
-    for (int nota : resultados_pruebas) {
-        suma += nota;
-    }
-    promedio = suma / resultados_pruebas.size();
 }
 
 void alumno::cargarAsistencia(int a) { asistencia += a; }
-
+void alumno::set_pruebas_aprobadas(int aprobadas) { pruebas_aprobadas = aprobadas; }
+void alumno::set_pruebas_desaprobadas(int desaprobadas) { pruebas_desaprobadas = desaprobadas; }
+void alumno::set_promedio(float prom) { promedio = prom; }
 
 // =====================
 // CLASE PROFESOR
@@ -138,7 +149,7 @@ public:
 
 // Funcion del Constructor de profesor
 int profesor::contadorProfesor = 0;
-profesor::profesor(string n, string a, int d, int e, int cod, string mat) : persona(n,a,d,e) {
+profesor::profesor(string nombre, string apellido, int dni, int edad, int cod, string mat) : persona(nombre,apellido,dni,edad) {
     codigo_profesor = ++contadorProfesor;
     antiguedad = 0;
     materia = mat;
@@ -259,6 +270,10 @@ int main() {
                     
                 }
                 guardarAlumnos();
+                cout << "Presione enter para volver al menu.\n";
+                cin.ignore();
+                cin.get();
+                system("cls");
                 break;      
 
             case CARGAR_RESULTADO_PRUEBA:
@@ -274,8 +289,7 @@ int main() {
                 int nota;
                 bool nota_valida;
 
-                for (auto& alumno_actual : lista_alumnos)
-                {
+                for (auto& alumno_actual : lista_alumnos){
                     do{
                         cout << "Ingrese nota 1<>10 para "; 
                         cout<< alumno_actual.getNombre() << " "; 
@@ -290,11 +304,12 @@ int main() {
                     }while (!nota_valida);
 
                     alumno_actual.cargarResultadoPrueba(nota);
-                    cout << "Presione enter para volver al menu.\n";
-                    cin.ignore();
-                    cin.get();
-                    system("cls");
+                    
                 }
+                cout << "Presione enter para volver al menu.\n";
+                cin.ignore();
+                cin.get();
+                system("cls");
                 guardarAlumnos();
                 break;
                 
@@ -395,17 +410,87 @@ profesor CrearProfesor() {
 void guardarAlumnos() {
     ofstream archivo("alumnos.csv");
 
-    for (const auto& a : lista_alumnos) {
-        archivo << a.getNumeroAlumno() << ","
-                << a.getNombre() << ","
-                << a.getApellido() << ","
-                << a.getDNI() << ","
-                << a.getEdad() << ","
-                << a.getPromedio() << ","
-                << a.getPruebasAprobadas() << ","
-                << a.getPruebasDesaprobadas() << ","
-                << a.getAsistencia()
+    for (auto& alumno : lista_alumnos) {
+        archivo << alumno.getNumeroAlumno() << ","
+                << alumno.getNombre() << ","
+                << alumno.getApellido() << ","
+                << alumno.getDNI() << ","
+                << alumno.getEdad() << ","
+                << alumno.getAsistencia();
+        for (auto& nota : alumno.getResultados()){
+            archivo << "," << nota;
+        }
+        archivo << endl;
+    }
+    archivo.close();
+    cout << "Archivo alumnos.csv guardado correctamente.\n";
+}
+
+void cargarAlumnos() {
+    ifstream archivo("alumnos.csv");
+    if (!archivo) return;
+
+    string linea;
+    while (getline(archivo, linea)) {
+        stringstream stream(linea);
+
+        string numStr, nombre, apellido, dniStr, edadStr, promedioStr, aprobadasStr, desaprobadasStr, asistenciaStr;
+
+        getline(stream, numStr, ',');
+        getline(stream, nombre, ',');
+        getline(stream, apellido, ',');
+        getline(stream, dniStr, ',');
+        getline(stream, edadStr, ',');
+        getline(stream, asistenciaStr, ',');
+
+        alumno al(nombre, apellido, stoi(dniStr), stoi(edadStr));
+        al.cargarAsistencia(stoi(asistenciaStr));
+
+        string notaStr;
+        while (getline(stream, notaStr, ',')) {
+            al.cargarResultadoPrueba(stoi(notaStr));
+        }
+        
+        lista_alumnos.push_back(al);
+    }
+    archivo.close();
+}
+void guardarProfesores() {
+    ofstream archivo("profesores.csv");
+
+    for (auto& profesor : lista_profesores) {
+        archivo << profesor.getCodigoProfesor() << ","
+                << profesor.getNombre() << ","
+                << profesor.getApellido() << ","
+                << profesor.getDNI() << ","
+                << profesor.getEdad() << ","
+                << profesor.getMateria()
                 << endl;
+    }
+    archivo.close();
+    cout << "Archivo profesores.csv guardado correctamente.\n";
+}
+
+void cargarProfesores() {
+    ifstream archivo("profesores.csv");
+    if (!archivo) return;
+
+    string linea;
+    while (getline(archivo, linea)) {
+        stringstream stream(linea);
+
+        string codStr, nombre, apellido, dniStr, edadStr, materia;
+
+        getline(stream, codStr, ',');
+        getline(stream, nombre, ',');
+        getline(stream, apellido, ',');
+        getline(stream, dniStr, ',');
+        getline(stream, edadStr, ',');
+        getline(stream, materia, ',');
+
+        profesor prof(nombre, apellido, stoi(dniStr), stoi(edadStr), stoi(codStr), materia);
+        
+        lista_profesores.push_back(prof);
     }
     archivo.close();
 }
